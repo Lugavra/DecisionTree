@@ -49,9 +49,9 @@ O script está estruturado de forma limpa e modular para execução em blocos:
 ## 📈 Visualizações do Projeto
 
 ### Estrutura de Decisão Gerada:
-![Árvore de Decisão](images/nome_da_foto_da_arvore.png)
+![Árvore de Decisão](images/arvore.png)
 
 ### Matriz de Confusão (Dados de Teste):
 ![Matriz de Confusão](images/nome_da_foto_da_matriz.png)
 
-https://github.com/Lugavra/DecisionTree/blob/6a2c4d7cef0146b8a69d0f0034d58ae03f37d11d/arvore.png
+
