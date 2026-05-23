@@ -52,6 +52,6 @@ O script está estruturado de forma limpa e modular para execução em blocos:
 ![Árvore de Decisão](images/arvore.png)
 
 ### Matriz de Confusão (Dados de Teste):
-![Matriz de Confusão](images/nome_da_foto_da_matriz.png)
+![Matriz de Confusão](images/matrizConfusao.png)
 
 
