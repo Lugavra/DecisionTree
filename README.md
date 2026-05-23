@@ -45,3 +45,11 @@ O script está estruturado de forma limpa e modular para execução em blocos:
 # 5 e # 6: Treinamento do classificador e plotagem do fluxograma da árvore.
 
 # 7: Geração da Matriz de Confusão e Relatório de Classificação nos dados de teste.
+
+## 📈 Visualizações do Projeto
+
+### Estrutura de Decisão Gerada:
+![Árvore de Decisão](images/nome_da_foto_da_arvore.png)
+
+### Matriz de Confusão (Dados de Teste):
+![Matriz de Confusão](images/nome_da_foto_da_matriz.png)
