@@ -1,0 +1,84 @@
+#%% 1. Importação de pacotes
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Novos pacotes para robustez estatística
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.tree import DecisionTreeClassifier, plot_tree
+from sklearn.metrics import confusion_matrix, accuracy_score, classification_report, ConfusionMatrixDisplay
+
+#%% 2. Carregamento e Pré-processamento
+df = pd.read_csv(r'C:\Users\pc\Desktop\TCC USP\Python_M11_support material .csv', delimiter=',')
+
+def tratar_moeda(coluna):
+    return pd.to_numeric(coluna.str.replace('.', '', regex=False).str.replace(',', '.', regex=False))
+
+df['limite_credito'] = tratar_moeda(df['limite_credito'])
+df['valor_transacoes_12m'] = tratar_moeda(df['valor_transacoes_12m'])
+
+# Variável alvo: 1 para Inadimplente (Classe de interesse), 0 para Bom Pagador
+# Inverter a lógica ajuda a focar o Recall no risco financeiro [4, 5]
+df['inadimplente'] = df['default']
+
+# Transformação em Dummies (drop_first=False para melhor leitura das regras da árvore) [6]
+df_final = pd.get_dummies(df, columns=['sexo', 'escolaridade', 'estado_civil', 'salario_anual'], drop_first=False)
+
+#%% 3. Definição de Variáveis e Divisão Treino/Teste
+# Selecionando variáveis preditoras
+X = df_final[['idade', 'dependentes', 'limite_credito', 
+              'valor_transacoes_12m', 'qtd_transacoes_12m', 'meses_inativo_12m']]
+y = df_final['inadimplente']
+
+# Divisão essencial para evitar o otimismo exagerado do erro de treinamento [2, 7]
+X_treino, X_teste, y_treino, y_teste = train_test_split(
+    X, y, test_size=0.3, random_state=42, stratify=y
+)
+
+#%% 4. Validação Cruzada (Robustez Estatística)
+# Estima a acurácia média em diferentes subconjuntos de treino [3, 8]
+modelo_base = DecisionTreeClassifier(max_depth=3, min_samples_leaf=50, random_state=42)
+scores = cross_val_score(modelo_base, X_treino, y_treino, cv=5)
+
+print(f"Acurácia Média (Cross-Validation): {scores.mean():.4f}")
+print(f"Desvio Padrão dos Scores: {scores.std():.4f}\n")
+
+#%% 5. Treinamento do Modelo Final
+# Ajustamos o modelo apenas no conjunto de TREINO [2, 9]
+modelo_arvore = DecisionTreeClassifier(
+    criterion='gini',         
+    max_depth=3,              
+    min_samples_leaf=50,      
+    random_state=42
+)
+modelo_arvore.fit(X_treino, y_treino)
+
+#%% 6. Visualização da Árvore
+plt.figure(figsize=(25,12))
+plot_tree(
+    modelo_arvore, 
+    feature_names=X.columns, 
+    class_names=['Bom Pagador', 'Inadimplente'], 
+    filled=True, rounded=True, proportion=True, precision=2, fontsize=12
+)
+plt.title("Árvore de Decisão: Regras para Concessão de Crédito", fontsize=20)
+plt.show()
+
+#%% 7. Avaliação de Performance no Conjunto de TESTE
+# Previsão em dados NUNCA vistos pelo modelo (Dados de Validação) [1, 10]
+y_pred = modelo_arvore.predict(X_teste)
+
+# Matriz de Confusão para análise de Falsos Negativos [4, 11]
+plt.figure(figsize=(8,6))
+ConfusionMatrixDisplay.from_predictions(
+    y_teste, y_pred, 
+    display_labels=['Bom Pagador', 'Inadimplente'],
+    cmap='Blues'
+)
+plt.title("Matriz de Confusão (Dados de Teste)")
+plt.show()
+
+# Relatório com foco no Recall da classe Inadimplente [4, 12]
+print("--- Relatório de Classificação (Dados de Teste) ---")
+print(classification_report(y_teste, y_pred))
